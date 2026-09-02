@@ -12,23 +12,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cm_Trading">
 
-  <!-- Embedded Web App Manifest -->
-  <link rel="manifest" href='data:application/manifest+json,{
-    "name": "Cm_Trading Calculator",
-    "short_name": "Cm_Trading",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#0f172a",
-    "theme_color": "#0f172a",
-    "icons": [
-      {
-        "src": "https://img.icons8.com/color/512/calculator.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  }'>
-
   <style>
     :root {
       --bg: #0f172a;
@@ -48,7 +31,7 @@
     
     html, body {
       width: 100vw;
-      min-height: 100svh;
+      min-height: 100vh;
       background-color: var(--bg);
       color: var(--text);
       display: flex;
@@ -209,10 +192,16 @@
       return;
     }
 
+    // 1. Position Size = (Risking Amount * 100) / Stop Loss %
     const positionSize = (risk * 100) / sl;
+
+    // 2. Base Leverage = Position Size / Capital
     const baseLeverage = positionSize / capital;
+
+    // 3. Leverage = Base Leverage + 2 (Offset runs silently in background)
     const leverageWithOffset = baseLeverage + 2;
 
+    // 4. Approximation Rule: If decimal value >= 0.5, round up to nearest whole number
     let finalLeverage;
     const decimalPart = leverageWithOffset - Math.floor(leverageWithOffset);
 
@@ -222,31 +211,46 @@
       finalLeverage = Math.floor(leverageWithOffset);
     }
 
+    // Render Outputs
     document.getElementById('posSize').innerText = Math.round(positionSize) + " USDT";
     document.getElementById('exactLev').innerText = leverageWithOffset.toFixed(2) + "x";
     document.getElementById('finalLev').innerText = finalLeverage + "x";
   }
 
+  // Initial Calculation
   calculate();
 
-  // Full Offline Caching Service Worker
+  // Service Worker Registration for Offline Cache
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      const swCode = `
-        const CACHE = 'cm-trading-v6';
-        self.addEventListener('install', e => {
-          e.waitUntil(caches.open(CACHE).then(c => c.add(location.href)));
+    window.addEventListener('load', function() {
+      const swScript = `
+        const CACHE_NAME = 'cm-trading-cache-v7';
+        self.addEventListener('install', function(event) {
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(function(cache) {
+              return cache.add(location.href);
+            })
+          );
           self.skipWaiting();
         });
-        self.addEventListener('activate', e => {
-          e.waitUntil(clients.claim());
+        self.addEventListener('activate', function(event) {
+          event.waitUntil(clients.claim());
         });
-        self.addEventListener('fetch', e => {
-          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+        self.addEventListener('fetch', function(event) {
+          event.respondWith(
+            caches.match(event.request).then(function(response) {
+              return response || fetch(event.request);
+            })
+          );
         });
       `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob));
+      try {
+        const blob = new Blob([swScript], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(blobUrl);
+      } catch (e) {
+        console.error('Service Worker registration skipped:', e);
+      }
     });
   }
 </script>

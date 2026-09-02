@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Risk Management Calc</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cm_Trading Calculator</title>
   
   <!-- PWA Settings -->
   <meta name="theme-color" content="#0f172a">
@@ -21,20 +21,182 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
-    .app-container { width: 100%; max-width: 440px; }
     
-    header { margin-bottom: 20px; text-align: center; }
-    header h1 { font-size: 1.3rem; color: var(--accent); letter-spacing: 0.5px; }
-    header p { font-size: 0.85rem; color: var(--subtext); margin-top: 4px; }
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px;
+    }
 
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .app-container { 
+      width: 100%; 
+      max-width: 480px; 
+    }
+    
+    header { 
+      margin-bottom: 20px; 
+      text-align: center; 
+    }
+    header h1 { 
+      font-size: 1.6rem; 
+      color: var(--accent); 
+      letter-spacing: 0.5px; 
+      font-weight: 800;
+    }
+    header p { 
+      font-size: 0.85rem; 
+      color: var(--subtext); 
+      margin-top: 4px; 
+    }
+
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 18px; 
+      margin-bottom: 16px; 
+      width: 100%;
+    }
     
     .input-group { margin-bottom: 14px; }
     .input-group:last-child { margin-bottom: 0; }
-    label { display: block; font-size: 0.8rem; color: var(--subtext); margin-bottom: 6px; text-transform: uppercase; font-weight: 600; }
-    input { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-size: 1rem; outline: none; }
+    
+    label { 
+      display: block; 
+      font-size: 0.8rem; 
+      color: var(--subtext); 
+      margin-bottom: 6px; 
+      text-transform: uppercase; 
+      font-weight: 600; 
+    }
+    
+    input { 
+      width: 100%; 
+      background: #0f172a; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      padding: 14px; 
+      color: var(--text); 
+      font-size: 1.1rem; 
+      outline: none; 
+    }
     input:focus { border-color: var(--accent); }
+
+    .result-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 14px 0; 
+      border-bottom: 1px solid var(--border); 
+    }
+    .result-row:last-child { border-bottom: none; }
+    
+    .result-label { font-size: 0.95rem; color: var(--subtext); font-weight: 500; }
+    .result-val { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    .highlight { color: #38bdf8; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>Cm_Trading</h1>
+    <p>Risk Management Calculator</p>
+  </header>
+
+  <!-- USER INPUTS -->
+  <div class="card">
+    <div class="input-group">
+      <label>Capital ($)</label>
+      <input type="number" id="capital" value="100" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label>Risking Amount ($)</label>
+      <input type="number" id="risk" value="20" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label>Stop Loss (%)</label>
+      <input type="number" step="0.01" id="sl" value="2.01" oninput="calculate()">
+    </div>
+  </div>
+
+  <!-- OUTPUTS -->
+  <div class="card">
+    <div class="result-row">
+      <span class="result-label">Position Size</span>
+      <span class="result-val highlight" id="posSize">0 USDT</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Exact Leverage</span>
+      <span class="result-val" id="exactLev">0x</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Leverage</span>
+      <span class="result-val" id="finalLev" style="font-size: 1.4rem;">0x</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function calculate() {
+    const capital = parseFloat(document.getElementById('capital').value) || 0;
+    const risk = parseFloat(document.getElementById('risk').value) || 0;
+    const sl = parseFloat(document.getElementById('sl').value) || 0;
+
+    if (sl <= 0 || capital <= 0) {
+      document.getElementById('posSize').innerText = "0 USDT";
+      document.getElementById('exactLev').innerText = "0x";
+      document.getElementById('finalLev').innerText = "0x";
+      return;
+    }
+
+    // 1. Position Size = (Risking Amount * 100) / Stop Loss %
+    const positionSize = (risk * 100) / sl;
+
+    // 2. Base Leverage = Position Size / Capital
+    const baseLeverage = positionSize / capital;
+
+    // 3. Leverage = Base Leverage + 2 (Offset runs silently)
+    const leverageWithOffset = baseLeverage + 2;
+
+    // 4. Approximation Rule: If decimal value >= 0.5, round up to nearest whole number
+    let finalLeverage;
+    const decimalPart = leverageWithOffset - Math.floor(leverageWithOffset);
+
+    if (decimalPart >= 0.5) {
+      finalLeverage = Math.ceil(leverageWithOffset);
+    } else {
+      finalLeverage = Math.floor(leverageWithOffset);
+    }
+
+    // Render Outputs
+    document.getElementById('posSize').innerText = Math.round(positionSize) + " USDT";
+    document.getElementById('exactLev').innerText = leverageWithOffset.toFixed(2) + "x";
+    document.getElementById('finalLev').innerText = finalLeverage + "x";
+  }
+
+  // Initial Run
+  calculate();
+
+  // Offline Service Worker
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      self.addEventListener('install', e => e.waitUntil(caches.open('pwa-v4').then(c => c.add(location.href))));
+      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob));
+  }
+</script>
+
+</body>
+</html>
+input:focus { border-color: var(--accent); }
 
     .result-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
     .result-row:last-child { border-bottom: none; }

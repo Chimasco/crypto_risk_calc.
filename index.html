@@ -20,34 +20,44 @@
       --border: #334155;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    }
     
     html, body {
-      width: 100%;
-      min-height: 100vh;
+      width: 100vw;
+      min-height: 100svh;
       background-color: var(--bg);
       color: var(--text);
       display: flex;
       justify-content: center;
       align-items: flex-start;
       padding: 16px;
+      overflow-x: hidden;
     }
 
     .app-container { 
       width: 100%; 
-      max-width: 480px; 
+      max-width: 420px; 
+      margin: 0 auto;
     }
     
     header { 
+      margin-top: 10px;
       margin-bottom: 20px; 
       text-align: center; 
     }
+    
     header h1 { 
-      font-size: 1.6rem; 
+      font-size: 1.8rem; 
       color: var(--accent); 
       letter-spacing: 0.5px; 
       font-weight: 800;
     }
+    
     header p { 
       font-size: 0.85rem; 
       color: var(--subtext); 
@@ -61,18 +71,24 @@
       padding: 18px; 
       margin-bottom: 16px; 
       width: 100%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }
     
-    .input-group { margin-bottom: 14px; }
-    .input-group:last-child { margin-bottom: 0; }
+    .input-group { 
+      margin-bottom: 14px; 
+    }
+    .input-group:last-child { 
+      margin-bottom: 0; 
+    }
     
     label { 
       display: block; 
-      font-size: 0.8rem; 
+      font-size: 0.78rem; 
       color: var(--subtext); 
       margin-bottom: 6px; 
       text-transform: uppercase; 
       font-weight: 600; 
+      letter-spacing: 0.5px;
     }
     
     input { 
@@ -84,8 +100,11 @@
       color: var(--text); 
       font-size: 1.1rem; 
       outline: none; 
+      transition: border-color 0.2s ease;
     }
-    input:focus { border-color: var(--accent); }
+    input:focus { 
+      border-color: var(--accent); 
+    }
 
     .result-row { 
       display: flex; 
@@ -94,11 +113,25 @@
       padding: 14px 0; 
       border-bottom: 1px solid var(--border); 
     }
-    .result-row:last-child { border-bottom: none; }
+    .result-row:last-child { 
+      border-bottom: none; 
+    }
     
-    .result-label { font-size: 0.95rem; color: var(--subtext); font-weight: 500; }
-    .result-val { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
-    .highlight { color: #38bdf8; }
+    .result-label { 
+      font-size: 0.95rem; 
+      color: var(--subtext); 
+      font-weight: 500; 
+    }
+    
+    .result-val { 
+      font-size: 1.25rem; 
+      font-weight: 700; 
+      color: var(--accent); 
+    }
+    
+    .highlight { 
+      color: #38bdf8; 
+    }
   </style>
 </head>
 <body>
@@ -161,7 +194,7 @@
     // 2. Base Leverage = Position Size / Capital
     const baseLeverage = positionSize / capital;
 
-    // 3. Leverage = Base Leverage + 2 (Offset runs silently)
+    // 3. Leverage = Base Leverage + 2 (Offset runs silently in background)
     const leverageWithOffset = baseLeverage + 2;
 
     // 4. Approximation Rule: If decimal value >= 0.5, round up to nearest whole number
@@ -186,7 +219,7 @@
   // Offline Service Worker
   if ('serviceWorker' in navigator) {
     const swCode = `
-      self.addEventListener('install', e => e.waitUntil(caches.open('pwa-v4').then(c => c.add(location.href))));
+      self.addEventListener('install', e => e.waitUntil(caches.open('pwa-v5').then(c => c.add(location.href))));
       self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
     `;
     const blob = new Blob([swCode], { type: 'application/javascript' });
@@ -196,180 +229,3 @@
 
 </body>
 </html>
-input:focus { border-color: var(--accent); }
-
-    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .result-row:last-child { border-bottom: none; }
-    .result-label { font-size: 0.95rem; color: var(--subtext); }
-    .result-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
-    .highlight { color: #38bdf8; }
-
-    .badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent); padding: 14px; border-radius: 8px; margin-top: 10px; text-align: center; }
-    .badge p { font-size: 0.85rem; color: var(--subtext); }
-    .badge span { display: block; font-size: 1.5rem; font-weight: bold; color: var(--text); margin-top: 4px; }
-  </style>
-</head>
-<body>
-
-<div class="app-container">
-  <header>
-    <h1>Risk Management Calculator</h1>
-    <p>Crypto Perpetual Position & Leverage</p>
-  </header>
-
-  <!-- USER INPUTS -->
-  <div class="card">
-    <div class="input-group">
-      <label>Capital ($)</label>
-      <input type="number" id="capital" value="100" oninput="calculate()">
-    </div>
-    <div class="input-group">
-      <label>Risking Amount ($)</label>
-      <input type="number" id="risk" value="20" oninput="calculate()">
-    </div>
-    <div class="input-group">
-      <label>Stop Loss (%)</label>
-      <input type="number" step="0.01" id="sl" value="2.01" oninput="calculate()">
-    </div>
-  </div>
-
-  <!-- OUTPUTS -->
-  <div class="card">
-    <div class="result-row">
-      <span class="result-label">Position Size</span>
-      <span class="result-val highlight" id="posSize">0 USDT</span>
-    </div>
-    <div class="result-row">
-      <span class="result-label">Exact Leverage (+2)</span>
-      <span class="result-val" id="exactLev">0x</span>
-    </div>
-    
-    <div class="badge">
-      <p>USE LEVERAGE (APPROXIMATED)</p>
-      <span id="finalLev">0x</span>
-    </div>
-  </div>
-</div>
-
-<script>
-  function calculate() {
-    const capital = parseFloat(document.getElementById('capital').value) || 0;
-    const risk = parseFloat(document.getElementById('risk').value) || 0;
-    const sl = parseFloat(document.getElementById('sl').value) || 0;
-
-    if (sl <= 0 || capital <= 0) {
-      document.getElementById('posSize').innerText = "0 USDT";
-      document.getElementById('exactLev').innerText = "0x";
-      document.getElementById('finalLev').innerText = "0x";
-      return;
-    }
-
-    // 1. Position Size = (Risking Amount * 100) / Stop Loss %
-    const positionSize = (risk * 100) / sl;
-
-    // 2. Base Leverage = Position Size / Capital
-    const baseLeverage = positionSize / capital;
-
-    // 3. Leverage = Base Leverage + 2
-    const leverageWithOffset = baseLeverage + 2;
-
-    // 4. Approximation Rule: If decimal value >= 0.5, round to nearest whole number
-    let finalLeverage;
-    const decimalPart = leverageWithOffset - Math.floor(leverageWithOffset);
-
-    if (decimalPart >= 0.5) {
-      finalLeverage = Math.ceil(leverageWithOffset);
-    } else {
-      finalLeverage = Math.floor(leverageWithOffset);
-    }
-
-    // Render Outputs
-    document.getElementById('posSize').innerText = Math.round(positionSize) + " USDT";
-    document.getElementById('exactLev').innerText = leverageWithOffset.toFixed(2) + "x";
-    document.getElementById('finalLev').innerText = finalLeverage + "x";
-  }
-
-  // Initial Run
-  calculate();
-
-  // Offline Service Worker
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => e.waitUntil(caches.open('pwa-v3').then(c => c.add(location.href))));
-      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob));
-  }
-</script>
-
-</body>
-</html>
-    </div>
-    <div class="result-row">
-      <span class="result-label">Exact Leverage (+2)</span>
-      <span class="result-val" id="exactLev">0x</span>
-    </div>
-    
-    <div class="badge">
-      <p>USE LEVERAGE (APPROXIMATED)</p>
-      <span id="finalLev">0x</span>
-    </div>
-  </div>
-</div>
-
-<script>
-  function calculate() {
-    const capital = parseFloat(document.getElementById('capital').value) || 0;
-    const risk = parseFloat(document.getElementById('risk').value) || 0;
-    const sl = parseFloat(document.getElementById('sl').value) || 0;
-
-    if (sl <= 0 || capital <= 0) {
-      document.getElementById('posSize').innerText = "0 USDT";
-      document.getElementById('exactLev').innerText = "0x";
-      document.getElementById('finalLev').innerText = "0x";
-      return;
-    }
-
-    // 1. Position Size = (Risking Amount * 100) / Stop Loss %
-    const positionSize = (risk * 100) / sl;
-
-    // 2. Base Leverage = Position Size / Capital
-    const baseLeverage = positionSize / capital;
-
-    // 3. Leverage = Base Leverage + 2
-    const leverageWithOffset = baseLeverage + 2;
-
-    // 4. Approximation Rule: If decimal value >= 0.5, round to nearest whole number
-    let finalLeverage;
-    const decimalPart = leverageWithOffset - Math.floor(leverageWithOffset);
-
-    if (decimalPart >= 0.5) {
-      finalLeverage = Math.ceil(leverageWithOffset);
-    } else {
-      finalLeverage = Math.floor(leverageWithOffset);
-    }
-
-    // Render Outputs
-    document.getElementById('posSize').innerText = Math.round(positionSize) + " USDT";
-    document.getElementById('exactLev').innerText = leverageWithOffset.toFixed(2) + "x";
-    document.getElementById('finalLev').innerText = finalLeverage + "x";
-  }
-
-  // Initial Run
-  calculate();
-
-  // Offline Service Worker
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => e.waitUntil(caches.open('pwa-v3').then(c => c.add(location.href))));
-      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob));
-  }
-</script>
-
-</body>
-  </html>
-  

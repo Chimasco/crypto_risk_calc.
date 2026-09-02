@@ -1,3 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cm_Trading</title>
+  
+  <!-- Mobile & PWA Settings -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cm_Trading">
+
+  <!-- Embedded Web App Manifest -->
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name": "Cm_Trading Calculator",
+    "short_name": "Cm_Trading",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#0f172a",
+    "icons": [
+      {
+        "src": "https://img.icons8.com/color/512/calculator.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }'>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #10b981;
+      --text: #f8fafc;
+      --subtext: #94a3b8;
+      --border: #334155;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    }
+    
+    html, body {
+      width: 100vw;
+      min-height: 100svh;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .app-container { 
+      width: 100%; 
+      max-width: 420px; 
+      margin: 0 auto;
+    }
+    
+    header { 
+      margin-top: 10px;
+      margin-bottom: 20px; 
+      text-align: center; 
+    }
+    
+    header h1 { 
+      font-size: 1.8rem; 
+      color: var(--accent); 
+      letter-spacing: 0.5px; 
+      font-weight: 800;
+    }
+    
+    header p { 
+      font-size: 0.85rem; 
+      color: var(--subtext); 
+      margin-top: 4px; 
+    }
+
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 18px; 
+      margin-bottom: 16px; 
+      width: 100%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    .input-group { 
+      margin-bottom: 14px; 
+    }
+    .input-group:last-child { 
+      margin-bottom: 0; 
+    }
+    
+    label { 
+      display: block; 
+      font-size: 0.78rem; 
+      color: var(--subtext); 
+      margin-bottom: 6px; 
+      text-transform: uppercase; 
+      font-weight: 600; 
+      letter-spacing: 0.5px;
+    }
+    
+    input { 
+      width: 100%; 
+      background: #0f172a; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      padding: 14px; 
+      color: var(--text); 
+      font-size: 1.1rem; 
+      outline: none; 
+      transition: border-color 0.2s ease;
+    }
+    input:focus { 
+      border-color: var(--accent); 
+    }
+
+    .result-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 14px 0; 
+      border-bottom: 1px solid var(--border); 
+    }
+    .result-row:last-child { 
+      border-bottom: none; 
+    }
+    
+    .result-label { 
+      font-size: 0.95rem; 
+      color: var(--subtext); 
+      font-weight: 500; 
+    }
+    
+    .result-val { 
+      font-size: 1.25rem; 
+      font-weight: 700; 
+      color: var(--accent); 
+    } 
+    
+    .highlight { 
+      color: #38bdf8; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>Cm_Trading</h1>
+    <p>Risk Management Calculator</p>
+  </header>
+
+  <!-- USER INPUTS -->
+  <div class="card">
+    <div class="input-group">
+      <label>Capital ($)</label>
+      <input type="number" id="capital" value="100" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label>Risking Amount ($)</label>
+      <input type="number" id="risk" value="20" oninput="calculate()">
+    </div>
+    <div class="input-group">
+      <label>Stop Loss (%)</label>
+      <input type="number" step="0.01" id="sl" value="2.01" oninput="calculate()">
+    </div>
+  </div>
+
+  <!-- OUTPUTS -->
+  <div class="card">
+    <div class="result-row">
+      <span class="result-label">Position Size</span>
+      <span class="result-val highlight" id="posSize">0 USDT</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Exact Leverage</span>
+      <span class="result-val" id="exactLev">0x</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Leverage</span>
+      <span class="result-val" id="finalLev" style="font-size: 1.4rem;">0x</span>
+    </div>
+  </div>
+</div>
+
 <script>
   function calculate() {
     const capital = parseFloat(document.getElementById('capital').value) || 0;
@@ -31,30 +229,27 @@
 
   calculate();
 
-  // Robust Offline Service Worker
+  // Full Offline Caching Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       const swCode = `
-        const CACHE_NAME = 'cm-trading-v1';
+        const CACHE = 'cm-trading-v6';
         self.addEventListener('install', e => {
-          e.waitUntil(
-            caches.open(CACHE_NAME).then(cache => cache.addAll([location.href]))
-          );
+          e.waitUntil(caches.open(CACHE).then(c => c.add(location.href)));
           self.skipWaiting();
         });
         self.addEventListener('activate', e => {
           e.waitUntil(clients.claim());
         });
         self.addEventListener('fetch', e => {
-          e.respondWith(
-            caches.match(e.request).then(response => response || fetch(e.request))
-          );
+          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
         });
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob))
-        .then(() => console.log('Offline Ready'))
-        .catch(err => console.error('SW Failed', err));
+      navigator.serviceWorker.register(URL.createObjectURL(blob));
     });
   }
 </script>
+
+</body>
+</html>
